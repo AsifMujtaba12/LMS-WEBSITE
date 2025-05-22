@@ -1,0 +1,22 @@
+/* custom.css */
+.btn-after-effect {
+  @apply relative flex items-center gap-1 px-4 py-2 rounded-full bg-white text-black font-medium cursor-pointer transition-all duration-200 hover:-translate-y-[3px] hover:shadow-[0_10px_20px_rgba(0,0,0,0.2)] active:-translate-y-[1px] active:shadow-[0_5px_10px_rgba(0,0,0,0.2)];
+}
+
+.btn-after-effect::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 9999px;
+  background-color: white;
+  z-index: -10;
+  transition: all 0.4s;
+}
+
+.btn-after-effect:hover::after {
+  transform: scale(1.4, 1.6);
+  opacity: 0;
+}
