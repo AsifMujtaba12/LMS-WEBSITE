@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
     }
   ],
 
-}, { timestamps: true });
+}, { 
+  timestamps: true,
+  collection: 'lms' });
  const UserClerk = mongoose.model("UserClerk", userSchema)
  export default UserClerk
