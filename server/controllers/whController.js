@@ -1,6 +1,6 @@
 import {Webhook}  from 'svix'; 
 
-import UserClerk from '../models/User.js'
+import User from '../models/User.js'
 
 
 //Api controller function to manage clerk user with data base
@@ -25,7 +25,7 @@ export const clerkWebhooks = async (req, res) => {
                     email: data.email_addresses[0].email_address,
                     imageUrl: data.image_url,
                 }
-                await UserClerk.create(userData);// Yeh line User model ka use karke naya user document MongoDB mein save karti hai.
+                await User.create(userData);// Yeh line User model ka use karke naya user document MongoDB mein save karti hai.
                 res.status(200).json({message: "User created successfully"});
                 break;
                 }
@@ -35,7 +35,7 @@ export const clerkWebhooks = async (req, res) => {
                         name: data.first_name + " " + data.last_name,
                         imageUrl: data.image_url,
                     }
-                    await UserClerk.findByIdAndUpdate(data.id, userData);
+                    await User.findByIdAndUpdate(data.id, userData);
                     res.status(200).json({message: "User updated successfully"});
                     break;
                 }
