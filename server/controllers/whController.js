@@ -11,6 +11,7 @@ export const clerkWebhooks = async (req, res) => {
             "svix-timestamp": req.headers['svix-timestamp'],
             "svix-signature": req.headers['svix-signature'],
         })
+        console.log("Webhook verified");
         // req.body se type aur data extract karke Clerk ke events handle karna.
         const {data, type} = req.body;
         console.log('data and type :', data, type);
