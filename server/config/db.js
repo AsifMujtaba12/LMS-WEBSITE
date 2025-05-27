@@ -9,7 +9,9 @@ const connectDB = async () => {
       });
   
       // Attempt to connect to the MongoDB database using the connection URI from environment variables
-      await mongoose.connect(`${process.env.MONGODB_URI}/lms`);
+      await mongoose.connect(process.env.MONGODB_URI, {
+        dbName: 'lms', // Specify the database name to connect to
+      });
   
     } catch (error) {
       // If an error occurs during the connection attempt, log the error message
