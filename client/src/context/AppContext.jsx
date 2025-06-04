@@ -3,6 +3,7 @@ import { createContext, useEffect, useState } from "react"; // createContext is 
 import { dummyCourses } from "../assets/assets";
 import { useNavigate } from "react-router-dom";
 import humanizeDuration from 'humanize-duration';
+import {useUser, useAuth} from "@clerk/clerk-react";
 // Step 2: Creating the context
 // Here, AppContext is being created using createContext.
 // This context will hold the data  which can be shared across multiple components.
@@ -26,6 +27,8 @@ const AppContextProvider = (props) => {
   const fetchAllCourses = async ()=>{
     setAllCourses(dummyCourses)
   }
+  const {getToken} = useAuth();
+  const {user} = useUser();
   const fetchAllTestmonials = async ()=>{
     setTestmonials(dummyTestimonial)
   }
@@ -74,6 +77,14 @@ const AppContextProvider = (props) => {
     fetchAllCourses();
     fetchUserEnrolledCourse()
   }, []);
+  const logedIntoken = async()=>{
+    console.log( await getToken())
+  }
+  useEffect(()=>{
+    if(user){
+      logedIntoken()
+    }
+  }, [user])
   const data = {
     currency,
     allCourses,
