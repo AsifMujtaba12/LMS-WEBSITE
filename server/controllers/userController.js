@@ -2,6 +2,7 @@ import Stripe from "stripe";
 import Course from "../models/Course.js";
 import Purchase from "../models/Purchase.js";
 import User from "../models/User.js";
+import CourseProgress from "../models/CourseProgress.js";
 
 // get user Data: To fetch the logged-in user's data using their userId stored in req.auth.userId.
 const getUserData = async (req, res) => {
@@ -102,7 +103,127 @@ const purchaseCourse = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
-export { getUserData, userEnrolledCourses, purchaseCourse };
+
+
+//update user course progress
+const updateUserCourseProgress = async (req, res) => {
+    try {
+        // Get the user ID from the authenticated request
+        const userId = req.auth.userId;
+
+        // Destructure courseId and lectureId from the request body
+        const { courseId, lectureId } = req.body;
+
+        // Find existing progress for this user and course
+        const progressData = await CourseProgress.findOne({ userId, courseId });
+        console.log("progressData", progressData)
+
+        if (progressData) {
+            // Check if this lecture is already marked as completed
+            if (progressData.lectureCompleted.includes(lectureId)) {
+                return res.status(200).json({
+                    success: true,
+                    message: "Lecture Already Completed"
+                });
+            }
+
+            // If not completed, add lectureId to the lectureCompleted array
+            progressData.lectureCompleted.push(lectureId);
+
+            // Save the updated progress document
+            await progressData.save();
+        } else {
+            // If no progress exists for this course, create a new document
+            await CourseProgress.create({
+                userId,           // ID of the user
+                courseId,         // ID of the course
+                lectureCompleted: [lectureId]  // Start with this lecture as completed
+            });
+        }
+
+        // Send success response after updating or creating progress
+        res.status(200).json({
+            success: true,
+            message: "Progress Updated"
+        });
+
+    } catch (error) {
+        // Catch and return server error if something goes wrong
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+
+//get User Course Progress
+const  getUserCourseData = async (req, res) =>{
+    try {
+        // Get the user ID from the authenticated request
+        const userId = req.auth.userId;
+        const {courseId} = req.body;
+        // Find existing progress for this user and course
+        const progressData = await CourseProgress.findOne({ userId, courseId });
+        res.status(200).json({success:true , progressData})
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+}
+// Rating Course by User
+const addUserRating = async (req, res) => {
+    try {
+        // Step 1: Extract data
+        const userId = req?.auth?.userId;
+        const { courseId, rating } = req.body;
+
+        // Step 2: Validate input
+        if (!userId || !courseId || !rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ success: false, message: "Invalid input data." });
+        }
+
+        // Step 3: Check if course exists
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({ success: false, message: "Course not found." });
+        }
+
+        // Step 4: Check if user is enrolled in the course
+        const user = await User.findById(userId);
+        if (!user || !user.enrolledCourses.includes(courseId.toString())) {
+            return res.status(403).json({ success: false, message: "Access denied. Course not purchased." });
+        }
+
+        // Step 5: Check for existing rating by user
+        const existingRatingIndex = course.courseRating.findIndex(
+            (r) => r.userId.toString() === userId
+        );
+
+        if (existingRatingIndex > -1) {
+            // Update existing rating
+            course.courseRating[existingRatingIndex].rating = rating;
+        } else {
+            // Add new rating
+            course.courseRating.push({ userId, rating });
+        }
+
+        // Step 6: Save course with new/updated rating
+        await course.save();
+
+        return res.status(200).json({ success: true, message: "Rating submitted successfully." });
+
+    } catch (error) {
+        console.error("Error adding user rating:", error);
+        return res.status(500).json({ success: false, message: "Server error: " + error.message });
+    }
+};
+
+export {      getUserData, userEnrolledCourses, 
+              purchaseCourse,  updateUserCourseProgress,
+              getUserCourseData, addUserRating
+    };
 
 
 
