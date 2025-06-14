@@ -36,14 +36,14 @@ const courseSchema = new mongoose.Schema({
             rating : { type : Number, min: 1, max: 5 }        // Rating between 1 to 5
         }
     ],
-   educator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+   educator: { type: String, ref: 'User', required: true },
+   enrolledStudents: [{ type: String, ref: 'User' }]
        
 }, 
 {
     collection : 'courses',          // Name of the MongoDB collection
     timestamps: true,                // Automatically add createdAt and updatedAt fields
-    minimize: true                   // Don't store empty objects
+    minimize: false                  
 });
 
 // Create a Mongoose model from the course schema
