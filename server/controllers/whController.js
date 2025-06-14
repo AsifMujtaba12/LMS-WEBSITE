@@ -101,7 +101,7 @@ const stripeWebhooks = async (req, res) => {
             const session = await stripeInstance.checkout.sessions.list({
                 payment_intent: paymentIntentId
             });
-            console.log("session", session)
+
 
             // Extract purchaseId from session metadata
             const { purchaseId } = session.data[0].metadata;
@@ -113,7 +113,7 @@ const stripeWebhooks = async (req, res) => {
             const courseData = await Course.findById(purchaseData.courseId.toString());
 
             // Add user to course's enrolled students
-            courseData.enrolledStudents.push(userData);
+            courseData.enrolledStudents.push(userData._id);
             await courseData.save();
 
             // Add course to user's enrolled courses
