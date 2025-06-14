@@ -5,7 +5,7 @@ import { getAllCourses,getCourseById } from '../controllers/courseController.js'
 const courseRouter = express.Router();
 
 // Purpose: Fetch all published courses (used for course listing pages)
-courseRouter.get('/all', getAllCourses);
+courseRouter.get('/all',  getAllCourses);
 
 // Purpose: Fetch details of a specific course by its ID
 // ':id' is a dynamic parameter (e.g., /courses/123)

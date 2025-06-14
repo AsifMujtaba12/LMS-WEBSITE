@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { use, useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 // useParams is used to get dynamic route parameters like courseId
 import { useParams } from "react-router-dom";
@@ -8,12 +8,15 @@ import humanizeDuration from "humanize-duration";
 import Youtube from "react-youtube";
 import Footer from "../../components/student/Footer";
 import Rating from "../../components/student/Rating";
+import Loading from "../../components/student/Loading";
+import axios from "axios";
+import { toast } from "react-toastify";
 const Player = () => {
   // Get courseId from URL (via /player/:courseId route)
   const { courseId } = useParams();
 
   // Destructure context values: all enrolled courses and time calculator
-  const { enrolledCourses, calculateChapterTime } = useContext(AppContext);
+  const { enrolledCourses, calculateChapterTime, backendUrl, getToken, userData, fetchUserEnrolledCourses} = useContext(AppContext);
 
   // Logging all enrolled courses
   console.log("data in enrolledCourses", enrolledCourses);
@@ -26,6 +29,10 @@ const Player = () => {
 
   // State for storing selected lecture's data for video player
   const [playerData, setPlayerData] = useState(null);
+  const [progressData, setProgressData] = useState(null)
+  const [initialRating, setInitialRating] = useState(0);
+
+
 
   // Log the course data after finding it
   console.log("Data in courseData", courseData);
@@ -35,10 +42,69 @@ const Player = () => {
     enrolledCourses.map((course) => {  //here map--->find
       if (course._id === courseId) {
         setCourseData(course);
+        course.courseRating.map((item)=>{
+          if(item.userId === userData._id){
+            setInitialRating(item.rating)
+          }
+        })
       }
     });
   };
+  //mark lecture as a complete
+const markLectureAsCompleted = async (lecturId)=>{
+  try {
+    const token = getToken();
+    const { data } = await axios.post(backendUrl + '/api/user/update-course-progress',
+      {courseId, lecturId}, {headers: {Authorization: `Bearer ${token}`}}
+    )
+    if(data.success){
+      toast.success(data.message)
+    }else{
+      toast.error(data.message)
+    }
 
+  } catch (error) {
+      toast.error(error.message)
+    
+  }
+}
+//getCourse progress
+const getCourseProgress = async ()=>{
+  try {
+    const token = await getToken();
+    const { data } = await axios.post(backendUrl + '/api/user/get-course-progress', 
+      {courseId}, {headers : {Authorization: `Bearer ${token}`}}
+    );
+    if(data.success){
+      setProgressData(data.progressData)
+    }else{
+      toast.error(data.message);
+    }
+  } catch (error) {
+      toast.error(error.message);
+    
+  }
+}
+
+//handle Rating
+const handleRate = async (rating) =>{
+  try {
+    const token = getToken();
+    const {data} = await axios.post(backendUrl + '/api/user/add-rating',
+      {courseId, rating}, {headers:{Authorization:`Bearer ${token}`}}
+    )
+    if(data.success){
+      toast.success(data.message);
+      fetchUserEnrolledCourses() // update course as i have given rating
+    }else{
+      toast.error(data.message)
+    }
+  } catch (error) {
+      toast.error(error.message)
+
+    
+  }
+}
   // Toggle open/close status of chapter
   const toggleSection = (index) => {
     setOpenSection((prev) => ({ ...prev, [index]: !prev[index] }));
@@ -46,10 +112,14 @@ const Player = () => {
 
   // Fetch course data when component mounts or when enrolledCourses change
   useEffect(() => {
+    if(enrolledCourses.length > 0){
     getCourseData();
+    }
   }, [enrolledCourses]);
-
-  return (
+useEffect(()=>{
+  getCourseProgress
+},[])
+  return courseData ? (
     <>
       {/* Main layout: flex on mobile, grid on medium screens */}
       <div className="p-4 sm:p-10 flex flex-col-reverse md:grid md:grid-cols-2 gap-10 md:px-36">
@@ -105,7 +175,7 @@ const Player = () => {
                           {/* Icon before lecture name (tick/play) */}
                           <img
                             src={
-                              false ? assets.blue_tick_icon : assets.play_icon
+                              progressData && progressData.lectureCompleted.includes(lecture.lecturId) ? assets.blue_tick_icon : assets.play_icon
                             }
                             alt="play-icon"
                             className="w-4 h-4 mt-1"
@@ -149,7 +219,7 @@ const Player = () => {
           {/* Rating section below course */}
           <div className="flex items-center gap-2 py-3 mt-10">
             <h1 className="text-xl font-bold">Rate This Course:</h1>
-            <Rating initialRating={0} />
+            <Rating initialRating={initialRating} onRate={handleRate}/>
           </div>
         </div>
 
@@ -168,8 +238,9 @@ const Player = () => {
                   {playerData.chapter}.{playerData.lecture}.
                   {playerData.lectureTitle}
                 </p>
-                <button className="text-blue-600">
-                  {false ? "Completed" : "Mark Complete"}
+                <button onClick={()=>markLectureAsCompleted(playerData.lecturId)}
+                className="text-blue-600">
+                  {progressData && progressData.lectureCompleted.includes(playerData.lecturId) ? "Completed" : "Mark Complete"}
                 </button>
               </div>
             </div>
@@ -183,7 +254,7 @@ const Player = () => {
       {/* Footer */}
       <Footer />
     </>
-  );
+  ): <Loading/>
 };
 
 export default Player;

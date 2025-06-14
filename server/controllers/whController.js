@@ -79,7 +79,7 @@ const stripeWebhooks = async (req, res) => {
 
     try {
         // Verify the event was sent by Stripe (not a fake request)
-        event = stripeInstance.webhooks.constructEvent(
+        event = Stripe.webhooks.constructEvent(
             req.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET

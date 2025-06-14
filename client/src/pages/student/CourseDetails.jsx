@@ -6,8 +6,11 @@ import { assets } from "../../assets/assets";
 import humanizeDuration from "humanize-duration";
 import Footer from '../../components/student/Footer'
 import Youtube from 'react-youtube';
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const CourseDetails = () => {
+  
   const { id } = useParams();
   const [courseData, setCourseData] = useState(null);
   const [isAlreadyEnrolled, setisAlreadyEnrolled] = useState(null);
@@ -15,17 +18,61 @@ const CourseDetails = () => {
 
 
   const [openSection, setOpenSection] = useState({});
-
-  const { allCourses, calculateRating, calculateChapterTime,currency,calculateCourseDuration,calculateNoOfLectures } = useContext(AppContext);
+  const { allCourses, calculateRating, backendUrl, userData, getToken, calculateChapterTime, currency, calculateCourseDuration,calculateNoOfLectures } = useContext(AppContext);
+ 
+ 
   const fetchCourseData = async () => {
-    if (allCourses && allCourses.length > 0) {
-      const findCourseData = allCourses.find(
-        (course) => course._id.toString() === id
-      );
-      console.log("findCourseData", findCourseData);
-      setCourseData(findCourseData);
+   try {
+    // individual courseData dtails
+    const {data} = await axios.get(backendUrl + "/api/course/" + id)
+    
+    if(data.success){
+      setCourseData(data.courseData)
+    }else {
+      toast.error(data.message)
     }
+
+   } catch (error) {
+      toast.error(error.message)
+   }
   };
+
+  // enroll course or buy course 
+  const enrollCourse = async ()=>{
+    try {
+      // Check if the user is logged in
+      if(!userData){
+        return toast.warn('Login to Enroll')
+      }
+      // Check if user already enrolled
+      if(isAlreadyEnrolled){
+        return toast.warn('Already Enrolled') // Prevent double enrollment
+      }
+      const token = await getToken();
+
+     const { data } = await axios.post(
+  backendUrl + '/api/user/purchase',
+  { courseId: courseData._id },  
+  {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  }
+);
+
+        if(data.success){
+          const {session_url} = data;
+          // Redirect to Stripe/Razorpay checkout page
+          window.location.replace(session_url)
+        }else{
+          toast.error(data.message)
+        }
+    } catch (error) {
+      console.log(error)
+      toast.error(error.message)
+    }
+  }
+
   const toggleSection = (index)=>{
     setOpenSection((prev)=>(
       {...prev, [index]:!prev[index]}
@@ -33,7 +80,13 @@ const CourseDetails = () => {
   }
   useEffect(() => {
     fetchCourseData();
-  }, [allCourses]);
+  }, []);
+   useEffect(() => {
+    if(userData && courseData){
+      setisAlreadyEnrolled(userData.enrolledCourses.includes(courseData._id))
+    }
+    
+  }, [userData, courseData]);
   return courseData ? (
     <>
       <div
@@ -73,18 +126,17 @@ const CourseDetails = () => {
               ))}
             </div>
             <p className="text-blue-600">
-              ( {courseData.courseRatings.length}{" "}
-              {courseData.courseRatings.length > 1 ? "ratings" : "rating"} )
+              ({courseData.courseRating.length}{courseData.courseRating.length > 1 ? "ratings" : "rating"} )
             </p>
             <p className="text-gray-500">
-              {courseData.enrolledStudents.length}{" "}
-              {courseData.enrolledStudents.length > 1 ? "Students" : "Student"}
+              { courseData?.enrolledStudents?.length }
+              {courseData?.enrolledStudents?.length > 1 ? "Students" : "Student"}
             </p>
           </div>
           <p>
             Course by{" "}
             <span className="text-blue-600 underline underline-offset-2">
-              Asif Mujtaba
+              {courseData?.educator?.name}
             </span>
           </p>
 
@@ -92,7 +144,7 @@ const CourseDetails = () => {
           <div className="pt-8 to-gray-800">
             <h2 className="text-xl font-semibold">Course Structure</h2>
             <div className="pt-5">
-              {courseData.courseContent.map((chapter, index) => (
+              {courseData?.courseContent?.map((chapter, index) => (
                 <div
                   key={index}
                   className="border border-gray-300 bg-white mb-2 rounded-md"
@@ -229,7 +281,8 @@ const CourseDetails = () => {
               </div>
             </div>
 
-            <button className="md:mt-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 transition-all duration-300
+            <button onClick={enrollCourse}
+             className="md:mt-6 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 transition-all duration-300
              rounded-md w-full py-3 mt-3 text-white font-medium">{isAlreadyEnrolled ? "AlreadyEnrolled" : "Enroll"}</button>
             <div className="pt-6">
               <p className="md:text-xl  text-lg  font-medium text-gray-800 ">What is in the Course?</p>

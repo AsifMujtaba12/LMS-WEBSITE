@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.31.1",
+    "axios": "^1.9.0",
     "humanize-duration": "^3.32.2",
     "motion": "^12.10.4",
     "quill": "^2.0.3",
@@ -21,7 +22,9 @@
     "react-router-dom": "^7.5.3",
     "react-simple-typewriter": "^5.0.1",
     "react-star-ratings": "^2.3.0",
+    "react-toastify": "^11.0.5",
     "react-youtube": "^10.1.0",
+    "toastify": "^2.0.1",
     "uniqid": "^5.4.0"
   },
   "devDependencies": {

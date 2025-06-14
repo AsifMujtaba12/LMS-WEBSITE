@@ -7,13 +7,12 @@ const getAllCourses = async (req, res) => {
      
 
     //Exclude courseContent and enrolledStudents fields using .select()   and 
-    //Populate educator's info from the educatorId reference
+    //Populate educator's info from the educator reference
     const courses = await Course.find({ isPublished: true }).select([
       '-courseContent', '-enrolledStudents'
-    ]).populate({ path: 'educatorId' });                      
+    ]).populate({ path: 'educator' });                      
 
 
-    
     console.log(courses);
 
     // Send the courses in response
@@ -41,7 +40,7 @@ const getCourseById = async (req, res)=>{
     try {
 
         // Fetch the course by ID and populate educator details
-        const courseData = await Course.findById(id).populate({path:'educatorId'});
+        const courseData = await Course.findById(id).populate({path:'educator'});
         console.log(courseData);
 
         //Remove Url if preview is not free

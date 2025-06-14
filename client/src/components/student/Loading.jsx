@@ -1,6 +1,19 @@
 import { motion } from "motion/react";
+import { useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Loading = () => {
+  const  { path }= useParams();
+  console.log("path", path)
+  const navigate = useNavigate();
+  useEffect(()=>{
+    if(path){
+      const timer = setTimeout(()=>{
+        navigate(`/${path}`)
+      },5000)
+      return ()=>clearTimeout(timer)
+    }
+  },[])
   return (
     <div className="flex justify-center items-center h-screen space-x-2">
       {[0, 1, 2].map((index) => (

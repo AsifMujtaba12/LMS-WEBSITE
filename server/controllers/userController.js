@@ -7,15 +7,13 @@ import CourseProgress from "../models/CourseProgress.js";
 // get user Data: To fetch the logged-in user's data using their userId stored in req.auth.userId.
 const getUserData = async (req, res) => {
   try {
-    const userId = req.auth.userId;
+     const userId = req.auth.userId
     const user = await User.findById(userId);
     console.log("userdetails", user);
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not Found" });
+      return res.status(404).json({ success: false, message: "User not Found" });
     }
-    res.status(200).json({ success: true, user });
+      res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -25,7 +23,8 @@ const getUserData = async (req, res) => {
 const userEnrolledCourses = async (req, res) => {
   try {
     const userId = req.auth.userId;
-    const userData = await User.findById(userId).populate("enrolledCourses");
+    console.log('UserId' , userId)
+    const userData = await User.findById(userId);
     console.log("userData", userData);
 
     // Send back only the enrolledCourses array
@@ -33,6 +32,7 @@ const userEnrolledCourses = async (req, res) => {
       .status(200)
       .json({ success: true, enrolledCourses: userData.enrolledCourses });
   } catch (error) {
+    console.log(error)
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -200,6 +200,7 @@ const addUserRating = async (req, res) => {
         const existingRatingIndex = course.courseRating.findIndex(
             (r) => r.userId.toString() === userId
         );
+        
 
         if (existingRatingIndex > -1) {
             // Update existing rating

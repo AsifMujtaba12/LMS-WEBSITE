@@ -12,8 +12,8 @@ const CourseCard = ({course}) => {
    className='border-2 border-gray-500/30 pb-6  overflow-hidden rounded-lg hover:shadow-2xl hover:translate-y-[-10px] transition-all duration-300' >
       <img src={course.courseThumbnail} className='w-full'/>
       <div className='p-3 text-left'>
-        <h3 className='text-baase font-semibold'>{course.courseTitle}</h3>
-        <p className='text-gray-500'>{course.educator.name}</p>
+        <h3 className='text-baase font-semibold'>{course?.courseTitle}</h3>
+        <p className='text-gray-500'>{course?.educator?.name}</p>
       <div className='flex items-center text-left space-x-2'>
       {/* rating  */}
       <p>{calculateRating(course)}</p>
@@ -22,7 +22,7 @@ const CourseCard = ({course}) => {
           <img key={i}  src={i < Math.floor(calculateRating(course)) ? assets.star : assets.star_blank} className='w-3.5 h-3.5'/>
         ))}
       </div>
-      <p className='text-gray-500'>{course.courseRatings.length}</p>
+      <p className='text-gray-500'>{course.courseRating.length}</p>
       </div>
       <div>
         <p className='text-base font-semibold text-gray-800'>{currency}{(course.coursePrice - (course.discount * course.coursePrice )/100 ).toFixed(2)}</p>

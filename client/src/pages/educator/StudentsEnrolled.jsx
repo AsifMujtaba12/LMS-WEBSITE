@@ -1,19 +1,38 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { dummyStudentEnrolled } from '../../assets/assets'
 import Loading from '../../components/student/Loading'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { AppContext } from '../../context/AppContext'
 
 const StudentsEnrolled = () => {
-  const [enrolledStudents, setEnrolledStudents] = useState(null)
+  const {isEducator, getToken, backendUrl} = useContext(AppContext)
+  const [enrolledStudents, setEnrolledStudents ] = useState(null)
+
   const fetchEnrolledStudents = async ()=>{
-    setEnrolledStudents(dummyStudentEnrolled)
+    try {
+      const token = await getToken();
+      const {data} = await axios.get( backendUrl + '/api/educator/enrolled-students', 
+        {headers:{Authorization: `Bearer ${token}`}});
+        if(data.success){
+          setEnrolledStudents(data.enrolledStudents)
+        }else{
+          toast.error(data.message);
+        }
+    } catch (error) {
+          toast.error(error.message)
+      
+    }
   }
   useEffect(()=>{
-    fetchEnrolledStudents()
-  }, [])
-  return enrolledStudents ?(
+  if(isEducator){
+      fetchEnrolledStudents()
+  }
+  }, [isEducator])
+  return enrolledStudents ? (
     <div className='min-h-screen flex flex-col items-center justify-between md:p-8
     md:pb-0 p-4 pt-8 pb-0'>
-     <div className='flexflex-col items-center max-w-4xl w-full overflow-hidden rounded-md 
+     <div className='flex flex-col items-center max-w-4xl w-full overflow-hidden rounded-md 
      bg-white border border-gray-500/20'>
       <table className='table-fixed md:table-auto w-full overflow-hidden pb-4'>
         <thead className='text-gray-900  border-b border-gray-500/20 text-sm text-left'>
@@ -25,15 +44,15 @@ const StudentsEnrolled = () => {
           </tr>
         </thead>
         <tbody className='text-sm text-gray-500'>
-          {enrolledStudents.map((item, index)=>(
+          {enrolledStudents?.map((item, index)=>(
             <tr key={index} className='border-b border-gray-500/20'>
               <td className='px-4 py-3  text-center hidden sm:table-cell'>{index + 1}</td>
               <td className='md:px-4 px-2 py-3 flex  items-center space-x-3'>
-             <img src={item.student.imageUrl} className='w-9 h-9 rounded-full'/>
-             <span className='truncate'>{item.student.name}</span>
+             <img src={item?.student?.imageUrl} className='w-9 h-9 rounded-full'/>
+             <span className='truncate'>{item?.student?.name}</span>
               </td>
-              <td className='px-4 py-3 truncate'>{item.courseTitle}</td>
-              <td className='px-4 py-3 hidden sm:table-cell'>{new Date(item.purchaseDate).toLocaleDateString()}</td>
+              <td className='px-4 py-3 truncate'>{item?.courseTitle}</td>
+              <td className='px-4 py-3 hidden sm:table-cell'>{new Date(item?.purchaseDate).toLocaleDateString()}</td>
             </tr>
           ))}
         </tbody>

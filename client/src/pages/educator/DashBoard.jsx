@@ -2,40 +2,58 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../context/AppContext'
 import { assets, dummyDashboardData } from '../../assets/assets';
 import Loading from '../../components/student/Loading';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const DashBoard = () => {
-  const {currency} =useContext(AppContext);
-  const [dasboardData, setDashboardData]= useState(null)
-  console.log("dasboardData", dasboardData);
+  const {currency, isEducator, getToken, backendUrl} =useContext(AppContext);
+  const [dashboardData, setDashboardData]= useState(null)
+  console.log("dashboardData", dashboardData);
 
-  const fetchDashboardData = async()=>{
-    setDashboardData(dummyDashboardData);
+  const fetchDashboardData = async ()=>{
+   try {
+    const token = await getToken();
+   const { data } = await axios.get(backendUrl + '/api/educator/dashboard', {
+  headers: { Authorization: `Bearer ${token}` }
+});
+console.log("dashboardata", data)
+if (data.success){
+  setDashboardData(data.dashboardData)
+} else {
+  toast.error(data.message)
+}
+
+   } catch (error) {
+    toast.error(error.message)
+   }
   }
-useEffect(()=>{
-  fetchDashboardData()
-}, []);
-  return dasboardData ? (
+useEffect(() => {
+  if(isEducator){
+    fetchDashboardData()
+  }
+}, [isEducator])
+  return dashboardData ? (
     <div className=' min-h-screen flex flex-col items-start justify-between gap-8 md:p-8 md:pb-0 p-4 pt-8 pb-0'>
       <div className='space-y-5 '>
         <div className='flex  flex-wrap gap-5 items-center '>
          <div className='flex items-center gap-3 shadow-custom-card border-2 hover:scale-105  transition-all duration-300 border-slate-700 p-4 w-56 rounded-md'>
           <img src={assets.patients_icon} alt='patients_icon'/>
           <div>
-            <p className='text-2xl font-medium text-gray-600'>{dasboardData.enrolledStudentsData.length}</p>
+            <p className='text-2xl font-medium text-gray-600'>{dashboardData.enrolledStudentsData.length}</p>
             <p className='text-base text-gray-600'>Total Enrolled</p>
           </div>
          </div>
          <div className='flex items-center gap-3 shadow-custom-card border-2 hover:scale-105 transition-all   duration-300 border-slate-700 p-4 w-56 rounded-md'>
           <img src={assets.appointments_icon} alt='patients_icon'/>
           <div>
-            <p className='text-2xl font-medium text-gray-600'>{dasboardData.totalCourses}</p>
+            <p className='text-2xl font-medium text-gray-600'>{dashboardData.totalCourses}</p>
             <p className='text-base text-gray-600'>Total Courses</p>
           </div>
          </div>
          <div className='flex items-center gap-3 shadow-custom-card border-2 hover:scale-105 transition-all   duration-300 border-slate-700 p-4 w-56 rounded-md'>
           <img src={assets.earning_icon} alt='patients_icon'/>
           <div>
-            <p className='text-2xl font-medium text-gray-600'>{currency}{dasboardData.totalEarnings}</p>
+            <p className='text-2xl font-medium text-gray-600'>{currency}{dashboardData.totalEarnings}</p>
             <p className='text-base text-gray-600'>Total Earnings</p>
           </div>
          </div>
@@ -54,7 +72,7 @@ useEffect(()=>{
               </tr>
             </thead>
             <tbody className='text-sm  text-gray-500'>
-              {dasboardData.enrolledStudentsData.map((item, index)=>(
+              {dashboardData.enrolledStudentsData.map((item, index)=>(
                 <tr key={index} className='border-b  border-gray-500/20'>
                   <td className='px-4 py-3 text-center hidden sm:table-cell'>{index + 1}</td>
                   <td className='md:px-4  px-2 py-3 flex items-center space-x-3 '>

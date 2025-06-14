@@ -4,14 +4,40 @@ import { Link, useLocation } from "react-router-dom"; // for routing and current
 import { FaArrowRight } from "react-icons/fa6"; // arrow icon
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react"; // Clerk authentication hooks and components
 import { AppContext } from "../../context/AppContext";
+import Editor from "quill/core/editor";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const NavBar = () => {
-   const {navigate, iseducator}= useContext(AppContext)
+  const {navigate, isEducator, backendUrl, setIsEducator, getToken}= useContext(AppContext)
   const { openSignIn } = useClerk(); // Clerk ka sign-in modal open karne ke liye
   const { user } = useUser(); // current logged-in user ko access karne ke liye
   const location = useLocation(); // current page path ko check karne ke liye
   const isCourseListPage = location.pathname.includes("/course-list"); // agar user course list page pe hai
 
+// become Educator 
+  const becomeEducator = async ()=>{
+    try {
+      if(isEducator){
+        navigate('/educator');
+        return;
+      }
+      const token = await getToken();
+      const { data } = await axios.get(backendUrl + "/api/educator/update-role", {
+        headers:{Authorization : `Bearer ${token}`}
+      });
+    if (data.success){
+      setIsEducator(true)
+      toast.success(data.message)
+    }else{
+      toast.error(data.message)
+    }
+      
+    } catch (error) {
+      toast.error(error.message)
+      
+    }
+}
   return (
     <div
       className={`
@@ -32,7 +58,7 @@ const NavBar = () => {
           {/* If user is logged in, show "Become Educator" and "My Enrollments" */}
           {user && (
             <>
-              <button onClick={()=>navigate('/educator')}>{iseducator ? "Educator Dashboard" :  "Become Educator"}</button>|
+              <button onClick={becomeEducator}>{isEducator ? "Educator Dashboard" :  "Become Educator"}</button>|
               <Link to={"/my-enrollments"}>My Enrollments</Link>
             </>
           )}
@@ -60,7 +86,7 @@ const NavBar = () => {
           {/* Show these only if user is logged in */}
           {user && (
             <>
-             <button onClick={()=>navigate('/educator')}>{iseducator ? "Educator Dashboard" :  "Become Educator"}</button>|
+             <button onClick={becomeEducator}>{isEducator ? "Educator Dashboard" :  "Become Educator"}</button>|
 
               <Link to={"/my-enrollments"}>My Enrollments</Link>
             </>

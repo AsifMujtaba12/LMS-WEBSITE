@@ -1,20 +1,32 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../context/AppContext'
 import Loading from '../../components/student/Loading';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const Mycourses = () => {
-  const {currency, allCourses} = useContext(AppContext);
+  const {currency, allCourses, backendUrl, getToken, isEducator} = useContext(AppContext);
   const [courses, setCourses] = useState(null);
   console.log('courses data', courses)
 
   const fetchEducatorCourses = async ()=>{
-    setCourses(allCourses);
+    try {
+      const token = await getToken();
+      const { data } = await axios.get(backendUrl + '/api/educator/courses',
+        {headers: {Authorization:`Bearer ${token}`}}
+      );
+      data.success && setCourses(data.courses)
+    } catch (error) {
+      toast.error(error.message);
+    }
   }
   useEffect(()=>{
-    fetchEducatorCourses()
-  }, [])
+    if(isEducator){
+      fetchEducatorCourses()
+    }
+  }, [isEducator])
   return courses ? (
-    <div className='h-sreen flex  flex-col items-start justify-between *:md:p-8
+    <div className='h-screen flex  flex-col items-start justify-between *:md:p-8
     md:pb-0  p-4 pt-8 pb-0'>
       <div className='w-full'>
        <h2 className='pb-4 text-lg font-medium'>My Courses</h2>
@@ -31,7 +43,7 @@ const Mycourses = () => {
             </tr>
           </thead>
           <tbody  className='text-sm text-gray-500'>
-            {courses.map((course)=>(
+            {courses?.map((course)=>(
               <tr key={course._id} className='border-b border-gray-500/20'>
                 <td className='md:px-4 pl-2 md:pl-4 py-3 flex items-center
                 space-x-3 truncate'>
@@ -40,7 +52,9 @@ const Mycourses = () => {
 
                 </td>
                 <td className='px-4 py-3'>
-                  {currency} {Math.floor(course.enrolledStudents.length * (course.coursePrice - course.discount * course.coursePrice /100))}
+                  {currency} {Math.floor((course?.enrolledStudents?.length || 0) *((course?.coursePrice || 0) - ((course?.discount || 0) * (course?.coursePrice || 0)) / 100)
+)}
+
                 </td>
                 <td className='px-4 py-3'>{course.enrolledStudents.length}</td>
                 <td className='px-4 py-3 hidden sm:block'>

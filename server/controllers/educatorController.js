@@ -3,6 +3,7 @@ import { clerkClient } from '@clerk/express';
 import { v2 as cloudinary } from "cloudinary";
 import Course from '../models/Course.js';
 import Purchase from '../models/Purchase.js';
+import User from '../models/User.js';
 
 // This function allows a regular user to upgrade to educator role
 const updateRoleToEducator = async (req, res) => {
@@ -46,7 +47,7 @@ const addCourse = async (req, res) => {
         const imageFile = req.file;
 
         //Get educator's ID from authenticated user
-        const educatorId = req.auth.userId;
+        const educator = req.auth.userId;
 
         // If no image file is attached, return error response
         if (!imageFile) {
@@ -59,8 +60,8 @@ const addCourse = async (req, res) => {
         //Parse the courseData string (from form-data) into JSON
         const parsedCourseData = JSON.parse(courseData);
         // console.log("parsedCourseData", parsedCourseData);
-        //Add educatorId into course data object before saving
-        parsedCourseData.educatorId = educatorId;
+        //Add educator into course data object before saving
+        parsedCourseData.educator = educator;
 
         //Create a new Course instance and insert initial data into database
         const newCourse = await Course.create(parsedCourseData);
@@ -103,11 +104,11 @@ const addCourse = async (req, res) => {
 const getEducatorCourses = async (req, res) => {
     try {
         // 1. Get the logged-in educator's user ID from the auth middleware
-        const educatorId= req.auth.userId;
-        console.log(educatorId);
+        const educator= req.auth.userId;
+        console.log(educator);
 
         // 2. Find all courses in the database that belong to this educator
-        const courses = await Course.find({educatorId});
+        const courses = await Course.find({educator});
         console.log(courses);
 
         // 3. Send a success response with the list of courses
@@ -127,8 +128,8 @@ const getEducatorCourses = async (req, res) => {
 const educatorDashboardData = async (req, res)=>{
   try {
    
-    const educatorId = req.auth.userId;  //Get the educator's userId from authenticated request
-    const courses = await Course.find({ educatorId });// Fetch all courses created by this educator
+    const educator = req.auth.userId;  //Get the educator's userId from authenticated request
+    const courses = await Course.find({ educator });// Fetch all courses created by this educator
     const totalCourses = courses.length;
     const courseIds = courses.map(course => course._id);//Extract course IDs from the educator's courses
 
@@ -152,15 +153,16 @@ const educatorDashboardData = async (req, res)=>{
        );
        students.forEach(student=>{
         enrolledStudentsData.push({
-          courseTiltle: course.courseTitle,
-          student
+          courseTitle: course.courseTitle,
+          student,
+          
         })
        })
     }
     res.status(200).json({
       success: true,
        dashboardData :{
-        totalEarnings, totalCourses,enrolledStudentsData
+        totalEarnings, totalCourses, enrolledStudentsData
        }
     });
 
@@ -177,10 +179,10 @@ const educatorDashboardData = async (req, res)=>{
 const getEnrolledStudentsData = async (req, res) => {
   try {
     // 1. Get educator ID from the authenticated user (e.g., from JWT token)
-    const educatorId = req.auth.userId;
+    const educator= req.auth.userId;
 
     // 2. Fetch all courses that belong to this educator
-    const courses = await Course.find({ educatorId });
+    const courses = await Course.find({ educator });
 
     // 3. Extract all course IDs to use for filtering purchases
     const courseIds = courses.map(course => course._id);
@@ -203,7 +205,7 @@ const getEnrolledStudentsData = async (req, res) => {
     // 7. Return success response with the enrolled students list
     res.status(200).json({
       success: true,
-      enrolledStudentsData
+      enrolledStudents: enrolledStudentsData 
     });
 
   } catch (error) {

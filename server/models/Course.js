@@ -30,14 +30,15 @@ const courseSchema = new mongoose.Schema({
     isPublished : { type : Boolean, default : true },        // Whether the course is published or not
     discount : { type : Number, required: true, min: 0, max: 100 }, // Discount percentage
     courseContent : [chapterSchema],                          // Array of chapters in the course
-    courseRating : [
+    courseRating: [
         {
             userId : { type : String },                       // ID of the user who rated
             rating : { type : Number, min: 1, max: 5 }        // Rating between 1 to 5
         }
     ],
-    educatorId : { type: String, ref: 'User',  required: true}, // Reference to the educator's user ID
-    enrolledStudents: [{ type: String, ref: 'User' }],        // Array of user IDs enrolled in the course
+   educator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
+       
 }, 
 {
     collection : 'courses',          // Name of the MongoDB collection
