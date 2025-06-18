@@ -68,6 +68,7 @@ dotenv.config();
 //using securely  stripe apis
 
 // Create a Stripe instance using your secret key
+
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Webhook handler to listen for payment events from Stripe
@@ -86,7 +87,7 @@ const stripeWebhooks = async (req, res) => {
         );
     } catch (error) {
         // If verification fails, return error to Stripe
-        return res.status(400).send(`Webhook Error: ${error.message}`);
+        return res.status(400).json(`Webhook Error: ${error.message}`);
     }
 
     // Handle different types of Stripe events
@@ -105,15 +106,16 @@ const stripeWebhooks = async (req, res) => {
 
             // Extract purchaseId from session metadata
             const { purchaseId } = session.data[0].metadata;
-            console.log("purchasedId", purchaseId)
+
 
             // Fetch purchase, user, and course data from DB
             const purchaseData = await Purchase.findById(purchaseId);
+            console.log('Purchase data', purchaseData)
             const userData = await User.findById(purchaseData.userId);
             const courseData = await Course.findById(purchaseData.courseId.toString());
 
             // Add user to course's enrolled students
-            courseData.enrolledStudents.push(userData._id);
+            courseData.enrolledStudents.push(userData);
             await courseData.save();
 
             // Add course to user's enrolled courses

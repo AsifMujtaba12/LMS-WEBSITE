@@ -24,13 +24,11 @@ const userEnrolledCourses = async (req, res) => {
   try {
     const userId = req.auth.userId;
     console.log('UserId' , userId)
-    const userData = await User.findById(userId);
+    const userData = await User.findById(userId).populate('enrolledCourses');
     console.log("userData", userData);
 
     // Send back only the enrolledCourses array
-    res
-      .status(200)
-      .json({ success: true, enrolledCourses: userData.enrolledCourses });
+    res.status(200).json({ success: true, enrolledCourses: userData.enrolledCourses });
   } catch (error) {
     console.log(error)
     res.status(500).json({ success: false, message: error.message });
@@ -61,14 +59,14 @@ const purchaseCourse = async (req, res) => {
         const purchaseData = {
             courseId: courseData._id, // Course being purchased
             userId: userId,           // User who is purchasing
-            amount:  courseData.coursePrice - (courseData.discount * courseData.coursePrice / 100).toFixed(2)          // Final price
+            amount: (courseData.coursePrice - (courseData.discount * courseData.coursePrice / 100).toFixed(2) )   // Final price
         };
 
         // Save the purchase record in the database
         const newPurchase = await Purchase.create(purchaseData);
-        console.log("newPurchase", newPurchase)
 
-        // Initialize Stripe instance using secret key
+    
+        // Initialize Stripe payment gatewat/ instance using secret key
         const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
         const currency = process.env.CURRENCY.toLowerCase(); // e.g., 'usd'
 
