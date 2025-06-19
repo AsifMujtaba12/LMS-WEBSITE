@@ -15,7 +15,7 @@ const StudentsEnrolled = () => {
       const {data} = await axios.get( backendUrl + '/api/educator/enrolled-students', 
         {headers:{Authorization: `Bearer ${token}`}});
         if(data.success){
-          setEnrolledStudents(data.enrolledStudents)
+          setEnrolledStudents(data.enrolledStudentsData)
         }else{
           toast.error(data.message);
         }

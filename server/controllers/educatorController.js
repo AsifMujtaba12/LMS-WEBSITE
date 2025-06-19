@@ -205,7 +205,7 @@ const getEnrolledStudentsData = async (req, res) => {
     // 7. Return success response with the enrolled students list
     res.status(200).json({
       success: true,
-      enrolledStudents: enrolledStudentsData 
+       enrolledStudentsData 
     });
 
   } catch (error) {
