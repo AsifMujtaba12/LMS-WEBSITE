@@ -116,11 +116,16 @@ const stripeWebhooks = async (req, res) => {
             const courseData = await Course.findById(purchaseData.courseId.toString());
 
             // Add user to course's enrolled students
-            courseData.enrolledStudents.push(userData);
+        courseData.enrolledStudents.push(userData);
+        console.log(courseData.enrolledStudents.push(userData));
+
             await courseData.save();
 
             // Add course to user's enrolled courses
             userData.enrolledCourses.push(courseData._id);
+            console.log(userData.enrolledCourses.push(courseData._id));
+
+            
             await userData.save();
 
             // Update the purchase status to "completed"
@@ -140,7 +145,7 @@ const stripeWebhooks = async (req, res) => {
             });
 
             // Extract purchaseId from session metadata
-            const { purchaseId } = session.metadata;
+            const { purchaseId } = session.data[0].metadata;
 
             // Update the purchase status to "failed"
             const purchaseData = await Purchase.findById(purchaseId);
