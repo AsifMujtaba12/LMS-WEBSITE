@@ -135,7 +135,7 @@ const stripeWebhooks = async (req, res) => {
             const paymentIntentId = paymentIntent.id;
 
             // Get the related Checkout Session
-            const session = await stripeInstance.checkout.sessions.list({
+            const session = await stripeInstance.checkout.sessions.retrieve({
                 payment_intent: paymentIntentId
             });
 
