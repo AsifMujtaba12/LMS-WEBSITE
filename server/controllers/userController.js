@@ -89,7 +89,7 @@ const purchaseCourse = async (request, response) => {
             line_items: line_items,
             mode: 'payment', // Payment mode
             metadata: {
-             purchaseId: newPurchase._id.toString() // Store purchase ID in metadata
+            purchaseId: newPurchase._id.toString() // Store purchase ID in metadata
             }
         });
 
@@ -104,14 +104,14 @@ const purchaseCourse = async (request, response) => {
 
 
 //update user course progress
-const updateUserCourseProgress = async (req, res) => {
+const updateUserCourseProgress = async (request, response) => {
     try {
         // Get the user ID from the authenticated request
-        const userId = req.auth.userId;
+        const userId = request.auth.userId;
         console.log('user id value', userId)
 
         // Destructure courseId and lectureId from the request body
-        const { courseId, lectureId } = req.body;
+        const { courseId, lectureId } = request.body;
 
         // Find existing progress for this user and course
         const progressData = await CourseProgress.findOne({ userId, courseId });
@@ -120,7 +120,7 @@ const updateUserCourseProgress = async (req, res) => {
         if (progressData) {
             // Check if this lecture is already marked as completed
             if (progressData.lectureCompleted.includes(lectureId)) {
-                return res.status(200).json({
+                return response.status(200).json({
                     success: true,
                     message: "Lecture Already Completed"
                 });
@@ -141,14 +141,14 @@ const updateUserCourseProgress = async (req, res) => {
         }
 
         // Send success response after updating or creating progress
-        res.status(200).json({
+        response.status(200).json({
             success: true,
             message: "Progress Updated"
         });
 
     } catch (error) {
         // Catch and return server error if something goes wrong
-        res.status(500).json({
+        response.status(500).json({
             success: false,
             message: error.message
         });

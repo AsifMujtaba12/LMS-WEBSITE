@@ -18,16 +18,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 // Webhooks
 app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
-app.post('/clerk', express.raw({ type: 'application/json' }), clerkWebhooks);
 
 
-app.use(express.json()); // required for JSON requests
+
 app.use(express.urlencoded({ extended: true }));
 app.use(clerkMiddleware()); // Clerk auth for all route
 // API Routes
-app.use('/api/educator', educatorRouter);
-app.use('/api/course', courseRouter);
-app.use('/api/user', userRouter);
+
+app.use('/api/educator',express.json(), educatorRouter);
+app.use('/api/course',express.json(), courseRouter);
+app.use('/api/user',express.json(), userRouter);
+app.post('/clerk', express.raw({ type: 'application/json' }), clerkWebhooks);
 
 
 
