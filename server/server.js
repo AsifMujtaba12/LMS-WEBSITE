@@ -16,14 +16,14 @@ const PORT = process.env.PORT || 3000;
 
 // Global Middlewares
 app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(clerkMiddleware()); // Clerk auth for all routes
 // Webhooks
 app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 app.post('/clerk', express.raw({ type: 'application/json' }), clerkWebhooks);
 
-app.use(express.json()); // required for JSON requests
 
+app.use(express.json()); // required for JSON requests
+app.use(express.urlencoded({ extended: true }));
+app.use(clerkMiddleware()); // Clerk auth for all route
 // API Routes
 app.use('/api/educator', educatorRouter);
 app.use('/api/course', courseRouter);

@@ -108,6 +108,7 @@ const updateUserCourseProgress = async (req, res) => {
     try {
         // Get the user ID from the authenticated request
         const userId = req.auth.userId;
+        console.log('user id value', userId)
 
         // Destructure courseId and lectureId from the request body
         const { courseId, lectureId } = req.body;

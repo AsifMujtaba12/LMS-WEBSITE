@@ -51,11 +51,11 @@ const Player = () => {
     });
   };
   //mark lecture as a complete
-const markLectureAsCompleted = async (lecturId)=>{
+const markLectureAsCompleted = async (courseId, lectureId)=>{
   try {
     const token = getToken();
     const { data } = await axios.post(backendUrl + '/api/user/update-course-progress',
-      {courseId, lecturId}, {headers: {Authorization: `Bearer ${token}`}}
+      {courseId, lectureId}, {headers: {Authorization: `Bearer ${token}`}}
     )
     if(data.success){
       toast.success(data.message)
@@ -89,8 +89,8 @@ const getCourseProgress = async ()=>{
 //handle Rating
 const handleRate = async (rating) =>{
   try {
-    const token = getToken();
-    const {data} = await axios.post(backendUrl + '/api/user/add-rating',
+    const token = await getToken();
+    const { data } = await axios.post(backendUrl + '/api/user/add-rating',
       {courseId, rating}, {headers:{Authorization:`Bearer ${token}`}}
     )
     if(data.success){
@@ -117,7 +117,7 @@ const handleRate = async (rating) =>{
     }
   }, [enrolledCourses]);
 useEffect(()=>{
-  getCourseProgress
+  getCourseProgress()
 },[])
   return courseData ? (
     <>
@@ -175,7 +175,7 @@ useEffect(()=>{
                           {/* Icon before lecture name (tick/play) */}
                           <img
                             src={
-                              progressData && progressData.lectureCompleted.includes(lecture.lecturId) ? assets.blue_tick_icon : assets.play_icon
+                              progressData && progressData.lectureCompleted.includes(lecture.lectureId) ? assets.blue_tick_icon : assets.play_icon
                             }
                             alt="play-icon"
                             className="w-4 h-4 mt-1"
@@ -238,9 +238,9 @@ useEffect(()=>{
                   {playerData.chapter}.{playerData.lecture}.
                   {playerData.lectureTitle}
                 </p>
-                <button onClick={()=>markLectureAsCompleted(playerData.lecturId)}
+                <button onClick={()=>markLectureAsCompleted(courseId, playerData.lectureId)}
                 className="text-blue-600">
-                  {progressData && progressData.lectureCompleted.includes(playerData.lecturId) ? "Completed" : "Mark Complete"}
+                  {progressData && progressData.lectureCompleted.includes(playerData.lectureId) ? "Completed" : "Mark Complete"}
                 </button>
               </div>
             </div>
