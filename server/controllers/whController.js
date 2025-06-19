@@ -135,12 +135,12 @@ const stripeWebhooks = async (req, res) => {
             const paymentIntentId = paymentIntent.id;
 
             // Get the related Checkout Session
-            const session = await stripeInstance.checkout.sessions.retrieve({
+            const session = await stripeInstance.checkout.sessions.list({
                 payment_intent: paymentIntentId
             });
 
             // Extract purchaseId from session metadata
-            const { purchaseId } = session.data[0].metadata;
+            const { purchaseId } = session.metadata;
 
             // Update the purchase status to "failed"
             const purchaseData = await Purchase.findById(purchaseId);
