@@ -82,7 +82,8 @@ const fetchUserEnrolledCourses = async ()=>{
       }
     })
     if(data.success){
-      setEnrolledCourses(data.enrolledCourses.reverse()) // new courses on top
+      setEnrolledCourses(data.enrolledCourses.reverse()) // new courses on 
+      console.log('FETCHED ENROLLED COURSES', data.enrolledCourses);
     }else{
       toast.error(data.message)
     }

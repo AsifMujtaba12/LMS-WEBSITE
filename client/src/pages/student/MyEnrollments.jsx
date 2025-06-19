@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 const MyEnrollments = () => {
 
   const {enrolledCourses, calculateCourseDuration, navigate, userData, fetchUserEnrolledCourses,
-     backendUrl, getToken, calculateNoOfLectures} = useContext(AppContext)
+  backendUrl, getToken, calculateNoOfLectures} = useContext(AppContext)
   console.log("enrolledCourses", enrolledCourses);
   const [progressArray, setProgressArray]= useState([])
   const getCourseProgress = async ()=>{

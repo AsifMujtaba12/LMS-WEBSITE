@@ -89,7 +89,7 @@ const purchaseCourse = async (req, res) => {
             line_items: line_items,
             mode: 'payment', // Payment mode
             metadata: {
-                purchasedId: newPurchase._id.toString() // Store purchase ID in metadata
+                purchaseId: newPurchase._id.toString() // Store purchase ID in metadata
             }
         });
 

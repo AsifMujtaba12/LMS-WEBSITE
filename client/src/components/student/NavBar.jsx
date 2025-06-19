@@ -4,7 +4,6 @@ import { Link, useLocation } from "react-router-dom"; // for routing and current
 import { FaArrowRight } from "react-icons/fa6"; // arrow icon
 import { useClerk, UserButton, useUser } from "@clerk/clerk-react"; // Clerk authentication hooks and components
 import { AppContext } from "../../context/AppContext";
-import Editor from "quill/core/editor";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -40,10 +39,9 @@ const NavBar = () => {
 }
   return (
     <div
-      className={`
-          ${isCourseListPage ? "bg-white" : "bg-cyan-100/70"} 
+      className={`${isCourseListPage ? "bg-white" : "bg-cyan-100/70"} 
           flex items-center justify-between px-4 sm:px-10 md:px-14 lg:px-36 
-          border-b border-slate-600 py-4
+          border-b border-slate-600 py-4 sticky top-0 z-999
         `}
     >
       {/* Logo and Brand Name */}

@@ -112,6 +112,7 @@ const stripeWebhooks = async (req, res) => {
             const purchaseData = await Purchase.findById(purchaseId);
             console.log('Purchase data', purchaseData)
             const userData = await User.findById(purchaseData.userId);
+            console.log(userData)
             const courseData = await Course.findById(purchaseData.courseId.toString());
 
             // Add user to course's enrolled students
