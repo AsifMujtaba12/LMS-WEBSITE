@@ -36,14 +36,14 @@ const userEnrolledCourses = async (req, res) => {
 };
 
 //purchase course  
-const purchaseCourse = async (req, res) => {
+const purchaseCourse = async (request, response) => {
     try {
         // Extract courseId from request body and origin from headers
-        const { courseId } = req.body;
-        const { origin } = req.headers;
+        const { courseId } = request.body;
+        const { origin } = request.headers;
 
         // Get the authenticated user's ID
-        const userId = req.auth.userId;
+        const userId = request.auth.userId;
 
         // Fetch user and course data from database
         const userData = await User.findById(userId);
@@ -51,7 +51,7 @@ const purchaseCourse = async (req, res) => {
 
         // If user or course is not found, respond with error
         if (!userData || !courseData) {
-            return res.json({ success: false, message: 'Data Not Found' });
+            return response.json({ success: false, message: 'Data Not Found' });
         }
 
         
@@ -94,11 +94,11 @@ const purchaseCourse = async (req, res) => {
         });
 
         // Return session URL to the frontend so user can be redirected
-        res.status(200).json({ success: true, session_url: session.url });
+        response.status(200).json({ success: true, session_url: session.url });
 
     } catch (error) {
         // Handle any unexpected errors
-        res.status(500).json({ success: false, message: error.message });
+        response.status(500).json({ success: false, message: error.message });
     }
 };
 

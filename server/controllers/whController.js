@@ -9,18 +9,18 @@ dotenv.config();
 
 
 //Api controller function to manage clerk user with data base
- const clerkWebhooks = async (req, res) => {
+ const clerkWebhooks = async (request, response) => {
     try {
    
         const whook= new Webhook(process.env.CLERK_WEBHOOK_SECRET);
-        await whook.verify(JSON.stringify(req.body), {
-            "svix-id": req.headers['svix-id'],
-            "svix-timestamp": req.headers['svix-timestamp'],
-            "svix-signature": req.headers['svix-signature'],
+        await whook.verify(JSON.stringify(request.body), {
+            "svix-id": request.headers['svix-id'],
+            "svix-timestamp": request.headers['svix-timestamp'],
+            "svix-signature": request.headers['svix-signature'],
         })
         console.log("Webhook verified");
-        // req.body se type aur data extract karke Clerk ke events handle karna.
-        const {data, type} = req.body;
+        // request.body se type aur data extract karke Clerk ke events handle karna.
+        const {data, type} = request.body;
         console.log('data and type :', data, type);
         switch (type) {
             case "user.created": {
@@ -31,7 +31,7 @@ dotenv.config();
                     imageUrl: data.image_url,
                 }
                 await User.create(userData);// Yeh line User model ka use karke naya user document MongoDB mein save karti hai.
-                res.status(200).json({message: "User created successfully"});
+                response.status(200).json({message: "User created successfully"});
                 break;
                 }
                 case "user.updated":{
@@ -41,12 +41,12 @@ dotenv.config();
                         imageUrl: data.image_url,
                     }
                     await User.findByIdAndUpdate(data.id, userData);
-                    res.status(200).json({message: "User updated successfully"});
+                    response.status(200).json({message: "User updated successfully"});
                     break;
                 }
                 case "user.deleted" : {
                 await User.findByIdAndDelete(data.id);
-                res.status(200).json({message: "User deleted successfully"});
+                response.status(200).json({message: "User deleted successfully"});
                 break;
                 }
                 default:
@@ -54,7 +54,7 @@ dotenv.config();
             
         }
     } catch (error) {
-        res.status(500).json({message: error.message});
+        response.status(500).json({message: error.message});
     }
 }
 
@@ -73,22 +73,22 @@ dotenv.config();
 const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Webhook handler to listen for payment events from Stripe
-const stripeWebhooks = async (req, res) => {
+const stripeWebhooks = async (request, response) => {
 
     // Stripe sends a signature in headers to verify the request
-    const sig = req.headers['stripe-signature'];  
+    const sig = request.headers['stripe-signature'];  
     let event;
 
     try {
         // Verify the event was sent by Stripe (not a fake request)
         event = Stripe.webhooks.constructEvent(
-        req.body,
+        request.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
     } catch (error) {
         // If verification fails, return error to Stripe
-        return res.status(400).json(`Webhook Error: ${error.message}`);
+        return response.status(400).json(`Webhook Error: ${error.message}`);
     }
 
     // Handle different types of Stripe events
@@ -107,11 +107,11 @@ const stripeWebhooks = async (req, res) => {
 
             // Extract purchaseId from session metadata
             const { purchaseId } = session.data[0].metadata;
-             if (!purchaseId) return res.status(400).json({ success: false, message: 'purchaseId missing in metadata' });
+             if (!purchaseId) return response.status(400).json({ success: false, message: 'purchaseId missing in metadata' });
 
             // Fetch purchase, user, and course data from DB
             const purchaseData = await Purchase.findById(purchaseId);
-            if (!purchaseData) return res.status(404).json({ success: false, message: 'Purchase not found' });
+            if (!purchaseData) return response.status(404).json({ success: false, message: 'Purchase not found' });
 
             const userData = await User.findById(purchaseData.userId);
             const courseData = await Course.findById(purchaseData.courseId.toString());
@@ -163,7 +163,7 @@ const stripeWebhooks = async (req, res) => {
     }
 
     // Respond back to Stripe to confirm we received the event
-    res.json({ received: true });
+    response.json({ received: true });
 }
 
 
