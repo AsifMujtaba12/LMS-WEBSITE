@@ -82,7 +82,7 @@ const stripeWebhooks = async (req, res) => {
     try {
         // Verify the event was sent by Stripe (not a fake request)
         event = Stripe.webhooks.constructEvent(
-            raw.body,
+        req.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
@@ -107,20 +107,26 @@ const stripeWebhooks = async (req, res) => {
 
             // Extract purchaseId from session metadata
             const { purchaseId } = session.data[0].metadata;
-
+             if (!purchaseId) return res.status(400).json({ success: false, message: 'purchaseId missing in metadata' });
 
             // Fetch purchase, user, and course data from DB
             const purchaseData = await Purchase.findById(purchaseId);
+            if (!purchaseData) return res.status(404).json({ success: false, message: 'Purchase not found' });
+
             const userData = await User.findById(purchaseData.userId);
             const courseData = await Course.findById(purchaseData.courseId.toString());
 
             // Add user to course's enrolled students
-        courseData.enrolledStudents.push(userData._id);
-            await courseData.save();
+               // Safely push references
+            if (!courseData.enrolledStudents.includes(userData._id)) {
+                courseData.enrolledStudents.push(userData._id);
+                await courseData.save();
+            }
 
-            // Add course to user's enrolled courses
-            userData.enrolledCourses.push(courseData._id);
-            await userData.save();
+            if (!userData.enrolledCourses.includes(courseData._id)) {
+                userData.enrolledCourses.push(courseData._id);
+                await userData.save();
+            }
 
             // Update the purchase status to "completed"
             purchaseData.status = "completed";
@@ -143,7 +149,10 @@ const stripeWebhooks = async (req, res) => {
 
             // Update the purchase status to "failed"
             const purchaseData = await Purchase.findById(purchaseId);
-            purchaseData.status = 'failed';
+           if (purchaseData) {
+                purchaseData.status = 'failed';
+                await purchaseData.save();
+            }
             await purchaseData.save();
             break;
         }
