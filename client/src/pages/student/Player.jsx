@@ -238,31 +238,10 @@ useEffect(()=>{
                   {playerData.chapter}.{playerData.lecture}.
                   {playerData.lectureTitle}
                 </p>
-               <button
-  // Only call markLectureAsCompleted if the lecture is not already completed
-  onClick={() =>
-    !progressData?.lectureCompleted.includes(playerData.lectureId) &&
-    markLectureAsCompleted(courseId, playerData.lectureId)
-  }
-
-  // Disable the button if lecture is already completed (prevents further clicks)
-  disabled={progressData?.lectureCompleted.includes(playerData.lectureId)}
-
-  // Apply different styles based on lecture completion status
-  className={`${
-    progressData?.lectureCompleted.includes(playerData.lectureId)
-      ? "text-gray-500 cursor-not-allowed"  // Style for completed lecture
-      : "text-blue-600 cursor-pointer"      // Style for incomplete lecture
-  }`}
->
-  {
-    // Change the button text based on lecture completion
-    progressData?.lectureCompleted.includes(playerData.lectureId)
-      ? "Completed"
-      : "Mark Complete"
-  }
-</button>
-
+                <button onClick={()=>markLectureAsCompleted(courseId, playerData.lectureId)}
+                className="text-blue-600">
+                  {progressData && progressData.lectureCompleted.includes(playerData.lectureId) ? "Completed" : "Mark Complete"}
+                </button>
               </div>
             </div>
           ) : (
