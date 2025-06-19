@@ -4,6 +4,7 @@ import Stripe from 'stripe';
 import Purchase from '../models/Purchase.js';
 import Course from '../models/Course.js';
 import dotenv from 'dotenv';
+import { raw } from 'express';
 dotenv.config();
 
 
@@ -81,7 +82,7 @@ const stripeWebhooks = async (req, res) => {
     try {
         // Verify the event was sent by Stripe (not a fake request)
         event = Stripe.webhooks.constructEvent(
-            req.body,
+            raw.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
@@ -110,22 +111,15 @@ const stripeWebhooks = async (req, res) => {
 
             // Fetch purchase, user, and course data from DB
             const purchaseData = await Purchase.findById(purchaseId);
-            console.log('Purchase data', purchaseData)
             const userData = await User.findById(purchaseData.userId);
-            console.log(userData)
             const courseData = await Course.findById(purchaseData.courseId.toString());
 
             // Add user to course's enrolled students
-        courseData.enrolledStudents.push(userData);
-        console.log(courseData.enrolledStudents.push(userData));
-
+        courseData.enrolledStudents.push(userData._id);
             await courseData.save();
 
             // Add course to user's enrolled courses
             userData.enrolledCourses.push(courseData._id);
-            console.log(userData.enrolledCourses.push(courseData._id));
-
-            
             await userData.save();
 
             // Update the purchase status to "completed"
