@@ -29,7 +29,7 @@ const Player = () => {
 
   // State for storing selected lecture's data for video player
   const [playerData, setPlayerData] = useState(null);
-  const [progressData, setProgressData] = useState(null)
+  const [progressData, setProgressData] = useState({lectureCompleted:[]})
   const [initialRating, setInitialRating] = useState(0);
 
 
@@ -39,12 +39,12 @@ const Player = () => {
 
   // Function to find course from enrolledCourses by ID
   const getCourseData = () => {
-    enrolledCourses.map((course) => {  //here map--->find
+    enrolledCourses?.map((course) => {  //here map--->find
       if (course._id === courseId) {
         setCourseData(course);
         course.courseRating.map((item)=>{
-          if(item.userId === userData._id){
-            setInitialRating(item.rating)
+          if(item?.userId === userData?._id){
+            setInitialRating(item?.rating)
           }
         })
       }
@@ -52,13 +52,18 @@ const Player = () => {
   };
   //mark lecture as a complete
 const markLectureAsCompleted = async (courseId, lectureId)=>{
+  
   try {
     const token =await getToken();
     const { data } = await axios.post(backendUrl + '/api/user/update-course-progress',
       {courseId, lectureId}, {headers: {Authorization: `Bearer ${token}`}}
     )
     if(data.success){
-      toast.success(data.message)
+      toast.success(data.message);
+      setProgressData((prev) => ({
+  ...prev,
+  lectureCompleted: [...prev.lectureCompleted, lectureId],
+}));
     }else{
       toast.error(data.message)
     }
@@ -76,7 +81,11 @@ const getCourseProgress = async ()=>{
       {courseId}, {headers : {Authorization: `Bearer ${token}`}}
     );
     if(data.success){
-      setProgressData(data.progressData)
+      if (data.success && data.progressData) {
+  setProgressData({
+    lectureCompleted: data.progressData.lectureCompleted || []
+  });
+}
     }else{
       toast.error(data.message);
     }
@@ -238,10 +247,31 @@ useEffect(()=>{
                   {playerData.chapter}.{playerData.lecture}.
                   {playerData.lectureTitle}
                 </p>
-                <button onClick={()=>markLectureAsCompleted(courseId, playerData.lectureId)}
-                className="text-blue-600">
-                  {progressData && progressData.lectureCompleted.includes(playerData.lectureId) ? "Completed" : "Mark Complete"}
-                </button>
+               <button
+  // Only call markLectureAsCompleted if the lecture is not already completed
+  onClick={() =>
+    !progressData?.lectureCompleted.includes(playerData.lectureId) &&
+    markLectureAsCompleted(courseId, playerData.lectureId)
+  }
+
+  // Disable the button if lecture is already completed (prevents further clicks)
+  disabled={progressData?.lectureCompleted.includes(playerData.lectureId)}
+
+  // Apply different styles based on lecture completion status
+  className={`${
+    progressData?.lectureCompleted.includes(playerData.lectureId)
+      ? "text-gray-500 cursor-not-allowed"  // Style for completed lecture
+      : "text-blue-600 cursor-pointer"      // Style for incomplete lecture
+  }`}
+>
+  {
+    // Change the button text based on lecture completion
+    progressData?.lectureCompleted.includes(playerData.lectureId)
+      ? "Completed"
+      : "Mark Complete"
+  }
+</button>
+
               </div>
             </div>
           ) : (

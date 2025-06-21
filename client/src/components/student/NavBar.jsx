@@ -40,8 +40,8 @@ const NavBar = () => {
   return (
     <div
       className={`${isCourseListPage ? "bg-white" : "bg-cyan-100/70"} 
-          flex items-center justify-between px-4 sm:px-10 md:px-14 lg:px-36 
-          border-b border-slate-600 py-4 sticky top-0 z-999
+          flex sticky top-0 z-10 items-center justify-between px-4 sm:px-10 md:px-14 lg:px-36 
+          border-b border-slate-600 py-4
         `}
     >
       {/* Logo and Brand Name */}
